@@ -55,7 +55,7 @@ jobs:
           echo "Source version: $VERSION"
 
           case "$VERSION" in
-            *beta*|*alpha*|*rc*|*dev*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
+            *beta*|*alpha*|*rc*|*dev*|*[0-9]b[0-9]*|*[0-9]a[0-9]*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
             *)                         echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
           esac
 
@@ -119,7 +119,7 @@ jobs:
           TAG="v${VERSION}"
 
           case "$VERSION" in
-            *beta*|*alpha*|*rc*|*dev*) TYPE="🧪 测试版" ;;
+            *beta*|*alpha*|*rc*|*dev*|*[0-9]b[0-9]*|*[0-9]a[0-9]*) TYPE="🧪 测试版" ;;
             *)                         TYPE="🚀 正式版" ;;
           esac
 

@@ -82,7 +82,7 @@ jobs:
 
           # 判断版本类型
           case "$VERSION" in
-            *beta*|*alpha*|*rc*|*dev*) TYPE="🧪 测试版" ;;
+            *beta*|*alpha*|*rc*|*dev*|*[0-9]b[0-9]*|*[0-9]a[0-9]*) TYPE="🧪 测试版" ;;
             *) TYPE="🚀 正式版" ;;
           esac
 
