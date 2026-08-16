@@ -44,7 +44,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(python -c "import re;c=open('src/endstone_easycheckupdate/easycheckupdate_plugin.py').read();m=re.search(r'^plugin_version\s*=\s*\"(.+?)\"',c,re.M);print(m.group(1) if m else '0.0.0')")
+          VERSION=$(python -c "import re;c=open('src/endstone_huhobot_penguin/huhobot_penguin_plugin.py').read();m=re.search(r'^plugin_version\s*=\s*\"(.+?)\"',c,re.M);print(m.group(1) if m else '0.0.0')")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build PR body
