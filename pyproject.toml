@@ -7,6 +7,7 @@ name = "endstone-huhobot-penguin"
 dynamic = ["version"]
 authors = [
     { name = "huohua" },
+    { name = "MengHanLOVE1027", email = "2193438288@qq.com"},
 ]
 description = "QQ 开放平台官方机器人与 BDS 之间的聊天 / 命令桥接插件（EndStone Python 版）"
 readme = "README.md"

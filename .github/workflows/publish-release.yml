@@ -46,8 +46,8 @@ jobs:
         run: |
           VERSION=$(python3 << 'PYEOF'
           import re
-          c = open('src/endstone_easycheckupdate/easycheckupdate_plugin.py', encoding='utf-8').read()
-          m = re.search(r'^plugin_version\s*=\s*"(.+?)"', c, re.M)
+          c = open('src/endstone_huhobot_penguin/huhobot_penguin_plugin.py', encoding='utf-8').read()
+          m = re.search(r'^PLUGIN_VERSION\s*=\s*"(.+?)"', c, re.M)
           print(m.group(1) if m else '0.0.0')
           PYEOF
           )
@@ -150,7 +150,7 @@ jobs:
 
             CHANGELOG_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
           else
-            COMMITS="- 🎉 EasyCheckUpdate v${VERSION} 首次发布"
+            COMMITS="- 🎉 HuHoBotPenguin v${VERSION} 首次发布"
             AUTHORS=""
             CHANGELOG_LINK=""
           fi
@@ -160,7 +160,7 @@ jobs:
 
           # ── 组装 Release Body ──
           cat > /tmp/release_body.md <<BODYEOF
-          ## ${TYPE}: EasyCheckUpdate v${VERSION}
+          ## ${TYPE}: HuHoBotPenguin v${VERSION}
 
           ### 📦 下载 · Downloads
 
@@ -197,7 +197,7 @@ jobs:
           ### 🔧 安装 · Installation
 
           \`\`\`bash
-          pip install endstone_easycheckupdate-*.whl
+          pip install endstone_huhobot_penguin-*.whl
           \`\`\`
 
           或从下方 Assets 下载 .whl 文件，放入插件目录即可。
