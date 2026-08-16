@@ -1,0 +1,7 @@
+.idea
+.vscode
+dist
+build
+endstone_huhobot_penguin.egg-info
+*.spec
+__pycache__

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "endstone-huhobot-penguin"
+dynamic = ["version"]
+authors = [
+    { name = "huohua" },
+]
+description = "QQ 开放平台官方机器人与 BDS 之间的聊天 / 命令桥接插件（EndStone Python 版）"
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+keywords = ["endstone", "plugins", "qq", "chat-bridge", "minecraft-bedrock"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.entry-points."endstone"]
+"huhobot-penguin" = "endstone_huhobot_penguin:HuHoBotPenguinPlugin"
+
+[tool.hatch.version]
+path = "src/endstone_huhobot_penguin/huhobot_penguin_plugin.py"
+pattern = 'PLUGIN_VERSION\s*=\s*"(?P<version>[^"]+)"'
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/endstone_huhobot_penguin"]
