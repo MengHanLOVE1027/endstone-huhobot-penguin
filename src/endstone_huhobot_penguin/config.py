@@ -170,7 +170,7 @@ def load(root_dir):
             if not isinstance(nested, dict):
                 nested = {}
     except Exception as e:
-        log.warning("[HuHoBotPenguin] config.json 读取失败，使用默认配置：" + str(e))
+        log.warning("config.json 读取失败，使用默认配置：" + str(e))
 
     flat = flatten(nested, "", {})
     changed = _migrate_post_prefix(flat)
@@ -192,7 +192,7 @@ def load(root_dir):
                 json.dump(nest(flat), f, ensure_ascii=False, indent=2)
                 f.write("\n")
         except Exception as e:
-            log.warning("[HuHoBotPenguin] 配置写入失败：" + str(e))
-        log.info("[HuHoBotPenguin] 配置文件已升级到版本 " + str(CONFIG_VERSION) + "（旧版本：" + str(previous_version) + "）")
+            log.warning("配置写入失败：" + str(e))
+        log.info("配置文件已升级到版本 " + str(CONFIG_VERSION) + "（旧版本：" + str(previous_version) + "）")
 
     return Config(flat)

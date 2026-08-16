@@ -25,7 +25,7 @@ from . import config as config_mod
 from . import custom_commands as custom_commands_mod
 from . import qqclient as qqclient_mod
 from . import state as state_mod
-from .logger import log, setup_logger
+from .logger import log
 
 PLUGIN_NAME = "huhobot-penguin"
 PLUGIN_VERSION = "1.0.0"
@@ -70,7 +70,6 @@ class HuHoBotPenguinPlugin(Plugin):
     # ---- 生命周期 ----
 
     def on_load(self):
-        setup_logger()
         self._main_thread = threading.get_ident()
 
     def on_enable(self):
@@ -96,7 +95,7 @@ class HuHoBotPenguinPlugin(Plugin):
         app_id = self.cfg.get_string("bot.app-id", "")
         secret = self.cfg.get_string("bot.secret", "")
         if not app_id or not secret:
-            log.warning("[HuHoBotPenguin] 未配置 bot.app-id / bot.secret，QQ 机器人未启动。"
+            log.warning("未配置 bot.app-id / bot.secret，QQ 机器人未启动。"
                         "请编辑 " + root + "/config.json")
             return
         self.state = state_mod.State(root, self.cfg)
@@ -105,7 +104,7 @@ class HuHoBotPenguinPlugin(Plugin):
         self.bot = bot_mod.Bot(self.cfg, self.state, self.client, self.custom, self)
         self.client.on_group_message = self._handle_group_message
         self.client.start()
-        log.info("[HuHoBotPenguin] HuHoBot Penguin 已加载（v" + self.version + "）")
+        log.info("HuHoBot Penguin 已加载（v" + self.version + "）")
 
     def _stop_runtime(self):
         client = self.client
@@ -115,7 +114,7 @@ class HuHoBotPenguinPlugin(Plugin):
             try:
                 client.stop()
             except Exception as e:
-                log.error("[HuHoBotPenguin] 停止机器人出错：" + str(e))
+                log.error("停止机器人出错：" + str(e))
         self.state = None
         self.custom = None
         self.cfg = None
@@ -140,10 +139,10 @@ class HuHoBotPenguinPlugin(Plugin):
         try:
             self.server.scheduler.run_task(self, _wrapper, 0, 0)
         except Exception as e:
-            log.error("[HuHoBotPenguin] run_on_main 调度失败：" + str(e))
+            log.error("run_on_main 调度失败：" + str(e))
             return None
         if not done.wait(timeout):
-            log.error("[HuHoBotPenguin] run_on_main 超时（主线程未响应）")
+            log.error("run_on_main 超时（主线程未响应）")
             return None
         if "error" in holder:
             raise holder["error"]
@@ -155,12 +154,12 @@ class HuHoBotPenguinPlugin(Plugin):
         try:
             commands_mod.handle_group_message(self.bot, message)
         except Exception:
-            log.exception("[HuHoBotPenguin] 处理群消息出错")
+            log.exception("处理群消息出错")
 
     # ---- 游戏 → QQ ----
 
     @event_handler
-    def on_player_chat(self, event):
+    def on_player_chat(self, event: PlayerChatEvent):
         if not self.bot:
             return
         player = getattr(event, "player", None)
@@ -168,11 +167,11 @@ class HuHoBotPenguinPlugin(Plugin):
         self._forward_game_message(name, getattr(event, "message", ""))
 
     @event_handler
-    def on_player_join(self, event):
+    def on_player_join(self, event: PlayerJoinEvent):
         self._notify_join_leave(getattr(event, "player", None), True)
 
     @event_handler
-    def on_player_quit(self, event):
+    def on_player_quit(self, event: PlayerQuitEvent):
         self._notify_join_leave(getattr(event, "player", None), False)
 
     def _forward_game_message(self, player_name, raw_msg):
@@ -200,7 +199,7 @@ class HuHoBotPenguinPlugin(Plugin):
                 filtered = bot.audit_text(content)
                 bot.send_to_all_groups(bot.format_game_message(player_name, filtered))
             except Exception:
-                log.exception("[HuHoBotPenguin] 转发游戏消息失败")
+                log.exception("转发游戏消息失败")
 
         threading.Thread(target=_send, daemon=True).start()
 
@@ -225,7 +224,7 @@ class HuHoBotPenguinPlugin(Plugin):
             return False
         sub = str(args[0]).lower() if args else ""
         if sub == "reload":
-            log.info("[HuHoBotPenguin] 正在重载配置…")
+            log.info("正在重载配置…")
             self._stop_runtime()
             self._start_runtime()
             sender.send_message("已重载配置文件。")

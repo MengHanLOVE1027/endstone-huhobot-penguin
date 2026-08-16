@@ -45,7 +45,7 @@ class Bot:
             success = self.plugin.server.dispatch_command(wrapper, str(command))
             return {"success": bool(success), "output": "\n".join(output)}
         except Exception as e:
-            log.error("[HuHoBotPenguin] 无法执行命令 " + str(command) + "：" + str(e))
+            log.error("无法执行命令 " + str(command) + "：" + str(e))
             return {"success": False, "output": ""}
 
     def broadcast(self, message):
@@ -56,7 +56,7 @@ class Bot:
         try:
             self.plugin.server.broadcast_message(str(message))
         except Exception as e:
-            log.error("[HuHoBotPenguin] 广播失败：" + str(e))
+            log.error("广播失败：" + str(e))
 
     def format_game_message(self, name, message):
         fmt = self.config.get_string("chat-format.from-game", "[游戏] {name}: {message}")
