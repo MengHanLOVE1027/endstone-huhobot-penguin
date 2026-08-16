@@ -44,7 +44,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(python -c "import re;c=open('src/endstone_easycheckupdate/easycheckupdate_plugin.py').read();m=re.search(r'^plugin_version\s*=\s*\"(.+?)\"',c,re.M);print(m.group(1) if m else '0.0.0')")
+          VERSION=$(python -c "import re;c=open('src/endstone_huhobot_penguin/huhobot_penguin_plugin.py').read();m=re.search(r'^PLUGIN_VERSION\s*=\s*\"(.+?)\"',c,re.M);print(m.group(1) if m else '0.0.0')")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build PR body
@@ -82,13 +82,13 @@ jobs:
 
           # 判断版本类型
           case "$VERSION" in
-            *beta*|*alpha*|*rc*|*dev*) TYPE="🧪 测试版" ;;
+            *beta*|*alpha*|*rc*|*dev*|*[0-9]b[0-9]*|*[0-9]a[0-9]*) TYPE="🧪 测试版" ;;
             *) TYPE="🚀 正式版" ;;
           esac
 
           # ── 组装 PR Body ──
           BODY=$(cat <<BODYEOF
-          ## ${TYPE}: EasyCheckUpdate v${VERSION}
+          ## ${TYPE}: HuHoBotPenguin v${VERSION}
 
           ### 📝 更新内容 · Changes
           BODYEOF

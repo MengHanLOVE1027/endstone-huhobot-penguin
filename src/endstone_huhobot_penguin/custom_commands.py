@@ -42,7 +42,7 @@ class CustomCommands:
             except (TypeError, ValueError):
                 permission = 0
             if not key or not command:
-                log.warning("[HuHoBotPenguin] 忽略缺少 key 或 command 的自定义命令配置")
+                log.warning("忽略缺少 key 或 command 的自定义命令配置")
                 continue
             self.list.append({"key": key, "command": command, "permission": permission})
 

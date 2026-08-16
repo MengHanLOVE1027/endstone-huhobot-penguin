@@ -144,23 +144,23 @@ class QQClient:
             try:
                 self._connect_once()
             except Exception as e:
-                log.error("[HuHoBotPenguin] 连接失败：" + str(e))
+                log.error("连接失败：" + str(e))
             if self.stopped:
                 break
             backoff = min(MAX_RECONNECT_DELAY, 2 ** self.reconnect_attempt)
             self.reconnect_attempt += 1
             wait = backoff + random.uniform(0, 0.5)
-            log.info("[HuHoBotPenguin] " + str(round(wait, 2)) + "s 后重连网关…")
+            log.info("" + str(round(wait, 2)) + "s 后重连网关…")
             if self._stop_event.wait(wait):
                 break
 
     def _connect_once(self):
         token = self.get_access_token()
-        log.info("[HuHoBotPenguin] 环境：正式，后端 " + self.backend_host + "。机器人需提审上线后才能在正式环境收到群事件")
+        log.info("环境：正式，后端 " + self.backend_host + "。机器人需提审上线后才能在正式环境收到群事件")
         url = self._get_gateway_url(token)
         if self.stopped:
             return
-        log.info("[HuHoBotPenguin] 网关地址：" + url)
+        log.info("网关地址：" + url)
 
         ws = WSC(url, headers={
             "Authorization": "QQBot " + (token or ""),
@@ -194,11 +194,11 @@ class QQClient:
             self.connected = False
             self.ready = False
             if not self.stopped:
-                log.warning("[HuHoBotPenguin] 网关连接断开，准备重连")
+                log.warning("网关连接断开，准备重连")
 
     def _send_identify_or_resume(self, ws, token):
         if self.session_id and not self.first_connect:
-            log.info("[HuHoBotPenguin] 尝试 Resume 已断开会话…")
+            log.info("尝试 Resume 已断开会话…")
             ws.send_text(json.dumps({
                 "op": OP_RESUME,
                 "d": {"token": "QQBot " + token, "session_id": self.session_id, "seq": self.last_seq},
@@ -225,7 +225,7 @@ class QQClient:
         try:
             payload = json.loads(data.decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
-            log.warning("[HuHoBotPenguin] 收到非法 JSON 帧：" + data[:200].decode("utf-8", "replace"))
+            log.warning("收到非法 JSON 帧：" + data[:200].decode("utf-8", "replace"))
             return
         op = payload.get("op")
         if op == OP_HELLO:
@@ -237,10 +237,10 @@ class QQClient:
         elif op == OP_DISPATCH:
             self._on_dispatch(payload)
         elif op == OP_RECONNECT:
-            log.warning("[HuHoBotPenguin] 服务端要求重连（op7）")
+            log.warning("服务端要求重连（op7）")
             ws.close(4000, "server-reconnect")
         else:
-            log.debug("[HuHoBotPenguin] 未处理 op=" + str(op))
+            log.debug("未处理 op=" + str(op))
 
     def _on_hello(self, ws, hello):
         interval = hello.get("heartbeat_interval") or 41250
@@ -273,7 +273,7 @@ class QQClient:
             except Exception:
                 break
             if time.time() - self._last_ack > interval * 2:
-                log.warning("[HuHoBotPenguin] 心跳 ACK 超时，主动断开重连")
+                log.warning("心跳 ACK 超时，主动断开重连")
                 try:
                     ws.close(1000, "heartbeat-timeout")
                 except Exception:
@@ -281,7 +281,7 @@ class QQClient:
                 break
 
     def _on_invalid_session(self, ws, d):
-        log.warning("[HuHoBotPenguin] 收到 Invalid Session（d=" + str(d) + "），重建会话")
+        log.warning("收到 Invalid Session（d=" + str(d) + "），重建会话")
         if d is True:
             # 服务端作废旧会话，必须全新 Identify
             self.session_id = None
@@ -299,7 +299,7 @@ class QQClient:
         if self.cfg.get_bool("debug.log-events", False):
             d = payload.get("d") or {}
             type_part = (" type=" + str(d.get("type"))) if "type" in d else ""
-            log.info("[HuHoBotPenguin] 收到 Dispatch：t=" + str(t) + type_part +
+            log.info("收到 Dispatch：t=" + str(t) + type_part +
                      " 前200字符=" + json.dumps(payload)[:200])
         if t == "READY":
             d = payload.get("d") or {}
@@ -307,19 +307,19 @@ class QQClient:
             self.ready = True
             self.first_connect = False
             self.reconnect_attempt = 0
-            log.info("[HuHoBotPenguin] QQ 机器人已连接（session_id=" + str(self.session_id) + "）")
+            log.info("QQ 机器人已连接（session_id=" + str(self.session_id) + "）")
             return
         if t == "RESUMED":
             self.ready = True
             self.first_connect = False
-            log.info("[HuHoBotPenguin] Resume 成功，会话已恢复")
+            log.info("Resume 成功，会话已恢复")
             return
         if t in ("GROUP_AT_MESSAGE_CREATE", "GROUP_MESSAGE_CREATE"):
             self._on_group_message(payload.get("d") or {})
 
     def _on_group_message(self, d):
         if not d.get("id") or not d.get("group_openid"):
-            log.warning("[HuHoBotPenguin] 群消息事件缺少 group_openid/id 字段：" + json.dumps(d)[:300])
+            log.warning("群消息事件缺少 group_openid/id 字段：" + json.dumps(d)[:300])
             return
         # 官方可能重复推送相同 msg_id
         if d["id"] in self.recent_ids:
@@ -330,7 +330,7 @@ class QQClient:
 
         author = d.get("author") or {}
         if self.cfg.get_bool("debug.log-events", False):
-            log.info("[HuHoBotPenguin] 收到群 @ 消息：group=" + str(d["group_openid"]) +
+            log.info("收到群 @ 消息：group=" + str(d["group_openid"]) +
                      " user=" + str(author.get("id")) +
                      " role=" + str(author.get("member_role") or "-") +
                      " content=" + json.dumps(d.get("content") or ""))
@@ -356,7 +356,7 @@ class QQClient:
             return self._refresh_token()
 
     def _refresh_token(self):
-        log.info("[HuHoBotPenguin] 正在获取 access_token…")
+        log.info("正在获取 access_token…")
         result = request_json("bots.qq.com", "/app/getAppAccessToken", method="POST",
                               headers={"Content-Type": "application/json; charset=utf-8"},
                               body={"appId": self.app_id, "clientSecret": self.secret},
@@ -401,11 +401,11 @@ class QQClient:
                 self._send_group_message_sync(group_id, content, msg_id, msg_type)
                 if self.cfg.get_bool("debug.log-events", False):
                     kind = "Markdown" if msg_type == 2 else "群消息"
-                    log.info("[HuHoBotPenguin] 群" + kind + " 已发送 group=" + str(group_id) +
+                    log.info("群" + kind + " 已发送 group=" + str(group_id) +
                              " content=" + json.dumps(str(content))[:150])
             except Exception as e:
                 kind = "Markdown" if msg_type == 2 else "群消息"
-                log.error("[HuHoBotPenguin] 群" + kind + " 发送失败 group=" + str(group_id) + "：" + str(e))
+                log.error("群" + kind + " 发送失败 group=" + str(group_id) + "：" + str(e))
             time.sleep(SEND_GAP_MS)
 
     def _send_group_message_sync(self, group_id, content, msg_id, msg_type=0):

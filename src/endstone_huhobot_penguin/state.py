@@ -60,7 +60,7 @@ class State:
                 f.write("\n")
             os.replace(tmp, self.file)
         except Exception as e:
-            log.error("[HuHoBotPenguin] 状态写入失败：" + str(e))
+            log.error("状态写入失败：" + str(e))
 
     # ---- 手动管理员 ----
 

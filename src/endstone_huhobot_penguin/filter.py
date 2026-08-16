@@ -112,5 +112,5 @@ def audit(value, cfg, root_dir):
         result = _ai_review(value, base_url, api_key, cfg.get_string("audit.model", "gpt-4o-mini"))
         return result if (result and result.strip()) else local
     except Exception as e:
-        log.warning("[HuHoBotPenguin] AI 二审失败，回退本地过滤：" + str(e))
+        log.warning("AI 二审失败，回退本地过滤：" + str(e))
         return local

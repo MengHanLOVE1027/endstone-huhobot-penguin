@@ -1,6 +1,7 @@
 """
 配置加载：读取插件目录下 config.json，缺省补全 + config-version 版本升级。
-键名与原 Java 版 config.yml 保持一致（点号分层），读取方式对齐 Java ConfigManager。
+默认配置以嵌套 JSON 定义（DEFAULT_VALUES），键名与原 Java 版 config.yml 一致；
+读取时展平为点号键（bot.app-id），对齐 Java ConfigManager 的读取方式。
 """
 
 import json
@@ -37,46 +38,54 @@ COMMAND_NAMES = [
 
 DEFAULT_VALUES = {
     "config-version": CONFIG_VERSION,
-    "bot.app-id": "",
-    "bot.secret": "",
-    "bot.name": "HuHoBot",
-    "bot.groups": [],
+    "bot": {
+        "app-id": "",
+        "secret": "",
+        "name": "HuHoBot",
+        "groups": [],
+    },
     "serverName": "",
-
-    "chat-format.from-game": "[游戏] {name}: {message}",
-    "chat-format.from-group": "[QQ] {name}: {message}",
-    "chat-format.post-chat": True,
-    "chat-format.start-with": "",
-
-    "whitelist.add-command": "whitelist add {name}",
-    "whitelist.del-command": "whitelist remove {name}",
-
+    "chat-format": {
+        "from-game": "[游戏] {name}: {message}",
+        "from-group": "[QQ] {name}: {message}",
+        "post-chat": True,
+        "start-with": "",
+    },
+    "whitelist": {
+        "add-command": "whitelist add {name}",
+        "del-command": "whitelist remove {name}",
+    },
     "filter-regex": [],
-    "admin.mode": "both",
-    "admin.openids": [],
-
-    "features.full-amount": False,
-    "features.markdown-query-online": True,
-    "features.markdown-whitelist": True,
-
-    "motd.ip": "",
-    "motd.port": 19132,
-
-    "join-leave.enabled": True,
-    "join-leave.join-format": "[{server}] 🟢{name}进入服务器",
-    "join-leave.leave-format": "[{server}] 🔴{name}退出服务器",
-
-    "audit.base-url": "",
-    "audit.api-key": "",
-    "audit.model": "gpt-4o-mini",
-
+    "admin": {
+        "mode": "both",
+        "openids": [],
+    },
+    "features": {
+        "full-amount": False,
+        "markdown-query-online": True,
+        "markdown-whitelist": True,
+    },
+    "motd": {
+        "ip": "",
+        "port": 19132,
+    },
+    "join-leave": {
+        "enabled": True,
+        "join-format": "[{server}] 🟢{name}进入服务器",
+        "leave-format": "[{server}] 🔴{name}退出服务器",
+    },
+    "audit": {
+        "base-url": "",
+        "api-key": "",
+        "model": "gpt-4o-mini",
+    },
     "custom-commands": [],
-    "debug.probe": False,
-    "debug.log-events": False,
+    "debug": {
+        "probe": False,
+        "log-events": False,
+    },
+    "commands": {_name: True for _name in COMMAND_NAMES},
 }
-
-for _name in COMMAND_NAMES:
-    DEFAULT_VALUES["commands." + _name] = True
 
 
 def _deep_clone(value):
@@ -108,6 +117,10 @@ def nest(flat):
     return root
 
 
+# 默认配置用嵌套 JSON 定义（可读），这里展平为点号键，供 _fill_missing / Config 门面使用
+_FLAT_DEFAULTS = flatten(DEFAULT_VALUES, "", {})
+
+
 def _migrate_post_prefix(flat):
     """旧版 chat-format.post-prefix 迁移到 chat-format.start-with。"""
     if "chat-format.post-prefix" not in flat:
@@ -120,7 +133,7 @@ def _migrate_post_prefix(flat):
 
 def _fill_missing(flat):
     changed = False
-    for key, value in DEFAULT_VALUES.items():
+    for key, value in _FLAT_DEFAULTS.items():
         if key not in flat:
             flat[key] = _deep_clone(value)
             changed = True
@@ -170,7 +183,7 @@ def load(root_dir):
             if not isinstance(nested, dict):
                 nested = {}
     except Exception as e:
-        log.warning("[HuHoBotPenguin] config.json 读取失败，使用默认配置：" + str(e))
+        log.warning("config.json 读取失败，使用默认配置：" + str(e))
 
     flat = flatten(nested, "", {})
     changed = _migrate_post_prefix(flat)
@@ -192,7 +205,7 @@ def load(root_dir):
                 json.dump(nest(flat), f, ensure_ascii=False, indent=2)
                 f.write("\n")
         except Exception as e:
-            log.warning("[HuHoBotPenguin] 配置写入失败：" + str(e))
-        log.info("[HuHoBotPenguin] 配置文件已升级到版本 " + str(CONFIG_VERSION) + "（旧版本：" + str(previous_version) + "）")
+            log.warning("配置写入失败：" + str(e))
+        log.info("配置文件已升级到版本 " + str(CONFIG_VERSION) + "（旧版本：" + str(previous_version) + "）")
 
     return Config(flat)

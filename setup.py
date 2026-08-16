@@ -13,7 +13,7 @@ with open("src/endstone_huhobot_penguin/huhobot_penguin_plugin.py", "r", encodin
 setuptools.setup(
     name="endstone-huhobot-penguin",
     version=version,
-    author="huohua",
+    author="huohua&MengHanLOVE1027",
     license="AGPL-3.0-or-later",
     description="QQ 开放平台官方机器人与 BDS 之间的聊天 / 命令桥接插件（EndStone Python 版）",
     long_description=long_description,

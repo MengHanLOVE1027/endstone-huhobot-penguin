@@ -192,7 +192,7 @@ def gate_admin(ctx, usage=None):
         return True
     reply(ctx, "此命令需要管理员权限")
     if usage:
-        log.debug("[HuHoBotPenguin] 用法：" + usage)
+        log.debug("用法：" + usage)
     return False
 
 
@@ -251,7 +251,7 @@ def _cmd_chazaixian(ctx):
         if players is not None:
             ctx["bot"].qqclient.send_markdown(ctx["groupId"], build_online_markdown(ctx["bot"], players), ctx["msgId"])
             return
-        log.info("[HuHoBotPenguin] 查在线 Markdown 解析失败，回退纯文本。list 原始输出：" + repr(output))
+        log.info("查在线 Markdown 解析失败，回退纯文本。list 原始输出：" + repr(output))
     reply(ctx, output)
 
 
@@ -391,7 +391,7 @@ def _cmd_chabaimingdan(ctx):
         if names is not None:
             ctx["bot"].qqclient.send_markdown(ctx["groupId"], build_whitelist_markdown(ctx["bot"], names), ctx["msgId"])
             return
-        log.info("[HuHoBotPenguin] 查白名单 Markdown 解析失败，回退纯文本。原始输出：" + repr(output))
+        log.info("查白名单 Markdown 解析失败，回退纯文本。原始输出：" + repr(output))
     reply(ctx, output)
 
 
@@ -521,7 +521,7 @@ def handle_group_message(bot, message):
     groups = bot.config.get_list("bot.groups")
     if groups and message["groupId"] not in groups:
         if log_events:
-            log.info("[HuHoBotPenguin] 群 " + str(message["groupId"]) + " 不在 bot.groups 白名单，忽略")
+            log.info("群 " + str(message["groupId"]) + " 不在 bot.groups 白名单，忽略")
         return False
 
     ctx = {
@@ -540,19 +540,19 @@ def handle_group_message(bot, message):
             toggle_key = "commands." + match["cmd"]["name"]
             if not bot.config.get_bool(toggle_key, True):
                 if log_events:
-                    log.info("[HuHoBotPenguin] 命令 " + match["cmd"]["name"] + " 已被关闭，忽略")
+                    log.info("命令 " + match["cmd"]["name"] + " 已被关闭，忽略")
                 reply(ctx, "此命令已被管理员关闭")
                 return True
             if log_events:
-                log.info("[HuHoBotPenguin] 命中命令：" + match["cmd"]["name"] + " 参数=" + repr(match["params"]))
+                log.info("命中命令：" + match["cmd"]["name"] + " 参数=" + repr(match["params"]))
             ctx["params"] = match["params"]
             try:
                 match["cmd"]["execute"](ctx)
             except Exception:
-                log.exception("[HuHoBotPenguin] 命令 " + match["cmd"]["name"] + " 执行出错")
+                log.exception("命令 " + match["cmd"]["name"] + " 执行出错")
             return True
         if log_events:
-            log.info("[HuHoBotPenguin] 非命令消息（bot.groups=" + repr(groups) +
+            log.info("非命令消息（bot.groups=" + repr(groups) +
                      "，isFullForwarding=" + str(bot.state.is_full_forwarding(message["groupId"])) + "）")
 
     # 非命令消息：全量转发到游戏

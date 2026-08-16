@@ -4,6 +4,7 @@ HuHoBot 门面：承载 auditText / sendCommand / broadcast / 消息格式化，
 """
 
 from endstone.command import CommandSenderWrapper
+from endstone.lang import Translatable
 
 from . import filter as filter_mod
 from .logger import log
@@ -33,10 +34,10 @@ class Bot:
         output = []
 
         def on_message(msg):
-            output.append(str(msg))
+            output.append(self._command_text(msg))
 
         def on_error(msg):
-            output.append(str(msg))
+            output.append(self._command_text(msg))
 
         try:
             wrapper = CommandSenderWrapper(
@@ -45,8 +46,17 @@ class Bot:
             success = self.plugin.server.dispatch_command(wrapper, str(command))
             return {"success": bool(success), "output": "\n".join(output)}
         except Exception as e:
-            log.error("[HuHoBotPenguin] 无法执行命令 " + str(command) + "：" + str(e))
+            log.error("无法执行命令 " + str(command) + "：" + str(e))
             return {"success": False, "output": ""}
+
+    def _command_text(self, msg):
+        """把命令输出（可能是 Translatable）翻译成可读文本。"""
+        try:
+            if isinstance(msg, Translatable):
+                return self.plugin.server.language.translate(msg)
+        except Exception:
+            pass
+        return str(msg)
 
     def broadcast(self, message):
         """广播消息到游戏大厅（不取消原消息，仅转发）。"""
@@ -56,7 +66,7 @@ class Bot:
         try:
             self.plugin.server.broadcast_message(str(message))
         except Exception as e:
-            log.error("[HuHoBotPenguin] 广播失败：" + str(e))
+            log.error("广播失败：" + str(e))
 
     def format_game_message(self, name, message):
         fmt = self.config.get_string("chat-format.from-game", "[游戏] {name}: {message}")
