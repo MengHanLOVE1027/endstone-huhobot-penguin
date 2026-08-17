@@ -36,6 +36,7 @@ class State:
             "administrator-modes": {},
             "full-forwarding": {},
             "bindings": {},
+            "known-groups": [],
         }
         self.load()
 
@@ -46,8 +47,15 @@ class State:
             if not isinstance(raw, dict):
                 return
             for key in self.data:
-                if isinstance(raw.get(key), dict):
-                    self.data[key] = raw[key]
+                value = raw.get(key)
+                if isinstance(value, type(self.data[key])):
+                    self.data[key] = value
+            # 回填：已有分群状态的群（管理员/认证/全量转发/绑定）视为已知群
+            for key, value in raw.items():
+                if isinstance(value, dict) and isinstance(self.data.get(key), dict):
+                    for group in value:
+                        if group not in self.data["known-groups"]:
+                            self.data["known-groups"].append(group)
         except Exception:
             # 首次运行没有状态文件，使用空状态
             pass
@@ -137,6 +145,17 @@ class State:
         if mode == MODE_MANUAL:
             return manual_ok
         return role_ok or manual_ok
+
+    # ---- 已知群（bot.groups 为空时 = 所有已互动过的群，用于游戏→QQ 方向） ----
+
+    def remember_group(self, group):
+        """记录与机器人互动过的群，供“所有群”发送使用。"""
+        if group not in self.data["known-groups"]:
+            self.data["known-groups"].append(group)
+            self.save()
+
+    def list_groups(self):
+        return list(self.data["known-groups"])
 
     # ---- 全量转发（每群覆盖，缺省取配置 features.full-amount） ----
 

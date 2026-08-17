@@ -308,6 +308,7 @@ class QQClient:
             self.first_connect = False
             self.reconnect_attempt = 0
             log.info("QQ 机器人已连接（session_id=" + str(self.session_id) + "）")
+            log.info("提示：只有开通「获取群内全部消息」，才支持不 @ 机器人直接发指令")
             return
         if t == "RESUMED":
             self.ready = True
@@ -315,9 +316,9 @@ class QQClient:
             log.info("Resume 成功，会话已恢复")
             return
         if t in ("GROUP_AT_MESSAGE_CREATE", "GROUP_MESSAGE_CREATE"):
-            self._on_group_message(payload.get("d") or {})
+            self._on_group_message(payload.get("d") or {}, t)
 
-    def _on_group_message(self, d):
+    def _on_group_message(self, d, event_type=None):
         if not d.get("id") or not d.get("group_openid"):
             log.warning("群消息事件缺少 group_openid/id 字段：" + json.dumps(d)[:300])
             return
@@ -330,7 +331,8 @@ class QQClient:
 
         author = d.get("author") or {}
         if self.cfg.get_bool("debug.log-events", False):
-            log.info("收到群 @ 消息：group=" + str(d["group_openid"]) +
+            kind = "全部消息" if event_type == "GROUP_MESSAGE_CREATE" else "@ 消息"
+            log.info("收到群" + kind + "：group=" + str(d["group_openid"]) +
                      " user=" + str(author.get("id")) +
                      " role=" + str(author.get("member_role") or "-") +
                      " content=" + json.dumps(d.get("content") or ""))
@@ -406,6 +408,9 @@ class QQClient:
             except Exception as e:
                 kind = "Markdown" if msg_type == 2 else "群消息"
                 log.error("群" + kind + " 发送失败 group=" + str(group_id) + "：" + str(e))
+                if not msg_id and "40034105" in str(e):
+                    log.error("提示：QQ 官方机器人 2025-04-21 起不再提供主动消息推送，"
+                              "游戏→群转发、进出服通知等主动消息无法发送（平台限制，无法通过插件绕过）")
             time.sleep(SEND_GAP_MS)
 
     def _send_group_message_sync(self, group_id, content, msg_id, msg_type=0):

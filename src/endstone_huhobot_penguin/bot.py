@@ -77,6 +77,9 @@ class Bot:
         return fmt.replace("{name}", str(name)).replace("{message}", str(message))
 
     def send_to_all_groups(self, content):
+        """群发：配置了 bot.groups 则发给这些群；为空 = 发给所有互动过的群。"""
         groups = self.config.get_list("bot.groups")
+        if not groups:
+            groups = self.state.list_groups()
         for group_id in groups:
             self.qqclient.send_group_message(group_id, content)

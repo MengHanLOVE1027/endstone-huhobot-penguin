@@ -62,8 +62,9 @@ DEFAULT_VALUES = {
     },
     "features": {
         "full-amount": False,
-        "markdown-query-online": True,
-        "markdown-whitelist": True,
+        # Markdown 卡片需在 QQ 开放平台单独申请权限；未开通时会被静默丢弃，故默认纯文本
+        "markdown-query-online": False,
+        "markdown-whitelist": False,
     },
     "motd": {
         "ip": "",
