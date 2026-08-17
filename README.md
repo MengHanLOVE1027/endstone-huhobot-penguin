@@ -20,7 +20,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
    - 机器人创建后，接入方式选择 **WebSocket**（事件订阅：群聊事件）。
    - 在“开发设置”里拿到 **AppID** 与 **AppSecret**。
    - 若开启了 IP 白名单，把 BDS 服务器的公网出口 IP 加入白名单（否则网关连接会被拒）。
-4. **填配置**：编辑 `plugins/huhobot_penguin/config.json`，填入 `bot.app-id`、`bot.secret`，并把目标群 OpenID 填进 `bot.groups`（为空 = 所有群都可触发）。
+4. **填配置**：编辑 `plugins/HuHoBot-Penguin/config.json`，填入 `bot.app-id`、`bot.secret`，并把目标群 OpenID 填进 `bot.groups`（为空 = 所有群都可触发）。
 5. **重启服务器**，控制台应依次出现：
    - `HuHoBot Penguin 已加载`
    - `正在获取 access_token…`
@@ -30,7 +30,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 
 ## 配置说明
 
-配置文件位于 `plugins/huhobot_penguin/config.json`（首次启动自动生成完整默认项）。
+配置文件位于 `plugins/HuHoBot-Penguin/config.json`（首次启动自动生成完整默认项）。
 
 | 配置 | 默认 | 说明 |
 |---|---|---|
@@ -58,7 +58,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 | `commands.<命令名>` | `true` | 单独开关某个内置命令 |
 | `debug.log-events` | `false` | 输出网关事件/发消息调试日志 |
 
-敏感词：代码内置默认词 + `plugins/huhobot_penguin/sensitive-words/*.txt`（每行一词，`#` 开头为注释，UTF-8）。
+敏感词：代码内置默认词 + `plugins/HuHoBot-Penguin/sensitive-words/*.txt`（每行一词，`#` 开头为注释，UTF-8）。
 
 > 注：与 Node 版不同，本版去掉了 `debug.probe`（TLS 出口探针是 Node 后端特有问题），改为 `debug.log-events` 控制事件调试日志。
 
@@ -119,7 +119,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 
 1. 重启后确认 控制台 `QQ 机器人已连接`。
 2. 目标群内 @机器人 发送 `查信息` → 回复本群 OpenID、本人 OpenID。
-3. `认证` → 回复本人认证状态；群主/管理员 `加管理 <OpenID>` → `plugins/huhobot_penguin/command-state.json` 落盘。
+3. `认证` → 回复本人认证状态；群主/管理员 `加管理 <OpenID>` → `plugins/HuHoBot-Penguin/command-state.json` 落盘。
 4. `执行 list` → 回复在线玩家。
 5. 游戏内发送 `#测试消息` → 群收到 `[游戏] 测试消息`；群内 `发信息 hello` → 游戏内广播 `[QQ] <OpenID>: hello`。
 6. 群内 `全量 开` 后发送普通（非命令）@消息 → 游戏内出现 `[QQ] …` 广播。
@@ -131,7 +131,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 - **能连接但收不到任何群事件（最常见）**：机器人**未提审上线**，正式网关不会推送事件。① 在开放平台完成机器人提审上线；② 确认机器人已被群主“添加到群聊”；③ 群设置里“机器人主动在群聊内发言”已开启。三者缺一都收不到。
 - **回复报错 11273 / 鉴权失败**：发消息 `Authorization` 头必须是 `QQBot <token>`（不是 `Bearer`）。代码已按要求实现。
 - **连不上网关**：检查 IP 白名单与服务器 TLS 出口；开启 `debug.log-events` 看连接/握手日志。
-- **日志没有 access_token 获取记录**：确认 `bot.app-id`/`bot.secret` 已填写且 `plugins/huhobot_penguin/config.json` 是当前读取的那份。
+- **日志没有 access_token 获取记录**：确认 `bot.app-id`/`bot.secret` 已填写且 `plugins/HuHoBot-Penguin/config.json` 是当前读取的那份。
 
 ## 已知限制
 

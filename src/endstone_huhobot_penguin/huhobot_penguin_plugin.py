@@ -13,6 +13,7 @@ QQ 开放平台官方机器人（WebSocket 接入）与 Minecraft 基岩版服�
 import os
 import threading
 import time
+from pathlib import Path
 
 # endstone 库
 from endstone.event import PlayerChatEvent, PlayerJoinEvent, PlayerQuitEvent, event_handler
@@ -66,6 +67,11 @@ class HuHoBotPenguinPlugin(Plugin):
         self.bot = None
         self._recent_forwards = []
         self._forward_lock = threading.Lock()
+
+    @property
+    def data_folder(self):
+        """数据目录固定为 plugins/HuHoBot-Penguin（不随插件名变化）。"""
+        return Path(super().data_folder).parent / "HuHoBot-Penguin"
 
     # ---- 生命周期 ----
 
