@@ -245,7 +245,7 @@ def _cmd_chazaixian(ctx):
     if not output:
         reply(ctx, "无输出")
         return
-    if (ctx["bot"].config.get_bool("features.markdown-query-online", True)
+    if (ctx["bot"].config.get_bool("features.markdown-query-online", False)
             and hasattr(ctx["bot"].qqclient, "send_markdown")):
         players = parse_player_list(output)
         if players is not None:
@@ -277,7 +277,7 @@ def _cmd_motd(ctx):
         ctx["bot"].qqclient.send_group_message(ctx["groupId"], "查询失败：" + str(e), ctx["msgId"])
         return
     online = bool(data and data.get("status") == "online")
-    if online:
+    if online and ctx["bot"].config.get_bool("features.markdown-query-online", False):
         ctx["bot"].qqclient.send_markdown(ctx["groupId"], build_server_query_markdown(data, ip, port), ctx["msgId"])
     else:
         ctx["bot"].qqclient.send_group_message(ctx["groupId"], format_server_query(data, ip, port), ctx["msgId"])
@@ -385,7 +385,7 @@ def _cmd_chabaimingdan(ctx):
     if not output:
         reply(ctx, "无输出")
         return
-    if (ctx["bot"].config.get_bool("features.markdown-whitelist", True)
+    if (ctx["bot"].config.get_bool("features.markdown-whitelist", False)
             and hasattr(ctx["bot"].qqclient, "send_markdown")):
         names = parse_whitelist(output)
         if names is not None:
@@ -523,6 +523,7 @@ def handle_group_message(bot, message):
         if log_events:
             log.info("群 " + str(message["groupId"]) + " 不在 bot.groups 白名单，忽略")
         return False
+    bot.state.remember_group(message["groupId"])
 
     ctx = {
         "bot": bot,

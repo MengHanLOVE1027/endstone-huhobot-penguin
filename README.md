@@ -37,7 +37,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 | `bot.app-id` / `bot.secret` | 空 | QQ 开放平台凭据，必填 |
 | `bot.name` | HuHoBot | 机器人显示名（“在线服务器”命令回复用） |
 | `serverName` | 空 | 进服/退服通知前缀 `{server}`；留空回退 `bot.name` |
-| `bot.groups` | `[]` | 允许的群 OpenID 列表；空 = 所有群 |
+| `bot.groups` | `[]` | 允许的群 OpenID 列表；空 = 所有群（游戏 → QQ 方向会发给所有互动过的群） |
 | `chat-format.from-game` | `[游戏] {name}: {message}` | 游戏 → 群的格式（`{name}` 玩家名） |
 | `chat-format.from-group` | `[QQ] {name}: {message}` | 群 → 游戏的格式（非命令转发时用） |
 | `chat-format.post-chat` | `true` | 群内非命令消息是否广播进游戏（需配合全量转发） |
@@ -47,8 +47,8 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 | `admin.mode` | `both` | 管理员判定：`qq`（仅群主/管理员）、`manual`（仅手动添加）、`both`（任一即可） |
 | `admin.openids` | `[]` | 全局手动管理员 OpenID（不受群管理方式约束） |
 | `features.full-amount` | `false` | 全量转发默认值（可用“全量”命令按群覆盖） |
-| `features.markdown-query-online` | `true` | “查在线”用自定义 Markdown 卡片展示（`msg_type=2`）；解析失败/发送失败自动回退纯文本 |
-| `features.markdown-whitelist` | `true` | “查白名单”用自定义 Markdown 卡片展示（解析 `allowlist list` 的 JSON 输出）；失败自动回退纯文本 |
+| `features.markdown-query-online` | `false` | “查在线”用自定义 Markdown 卡片展示（`msg_type=2`）。**需先在 QQ 开放平台申请 Markdown 权限**，否则消息会被平台静默丢弃；未开通请保持 `false`（纯文本） |
+| `features.markdown-whitelist` | `false` | “查白名单”用自定义 Markdown 卡片展示；同样需 Markdown 权限，未开通保持 `false` |
 | `motd.ip` | 空 | 服务器公网地址（IP 或域名），填写后“查在线”卡片顶部显示 MOTD 状态图（motd.minebbs.com 需能连通该地址）；留空不显示 |
 | `motd.port` | `19132` | 服务器端口（BDS 默认 19132） |
 | `join-leave.enabled` | `true` | 进服/退服通知开关 |
@@ -82,7 +82,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 | `查信息` | 无参：本群 OpenID / 本人 OpenID / 角色 / 认证状态；带参 ⭐：查看指定 OpenID 认证状态 |
 | `发信息 <内容>` | 过滤后广播进游戏（`[QQ] …`） |
 | `发消息 <内容>` | `发信息` 的同义词 |
-| `查在线` | 执行 `list` 返回在线玩家（默认 Markdown 卡片展示，可配置关闭） |
+| `查在线` | 执行 `list` 返回在线玩家（默认纯文本；申请 Markdown 权限后可开启 `features.markdown-query-online` 改用卡片） |
 | `在线服务器` | 返回机器人名 + 在线状态 |
 | `motd <地址[:端口]>` | 查询任意 Minecraft 服务器状态（motd.minebbs.com，支持基岩/Java，在线时 Markdown 卡片 + 状态图展示） |
 | `执行 <key>` | 执行自定义命令（仅 `permission: 0` 的命令） |
@@ -94,7 +94,7 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 | `管理方式 <QQ/手动/双重>` ⭐ | 设置本群管理员判定方式 |
 | `添加白名单 <玩家名>` ⭐ | 执行 `whitelist.add-command` 模板 |
 | `删除白名单 <玩家名>` ⭐ | 执行 `whitelist.del-command` 模板 |
-| `查白名单` | 执行 `allowlist list` 返回白名单玩家（默认 Markdown 卡片展示；BDS 1.21+，旧版需在源码改回 `whitelist list`） |
+| `查白名单` | 执行 `allowlist list` 返回白名单玩家（默认纯文本；BDS 1.21+，旧版需在源码改回 `whitelist list`） |
 | `绑定白名单 <玩家名>` | 自助：把本人 QQ 与该游戏名绑定并加入白名单（绑定记录存 `bindings`） |
 | `解除绑定` | 自助：解除本人绑定并移出白名单 |
 | `解绑白名单 <玩家名>` ⭐ | 管理员：按游戏名反查绑定并解除，同时移出白名单（用于成员退群后手动解绑） |
@@ -136,6 +136,9 @@ QQ 官方网关是 `wss://`（TLS WebSocket）。本插件用 Python 标准库 `
 ## 已知限制
 
 - 群消息事件有两类：默认仅推 @ 机器人的消息（`GROUP_AT_MESSAGE_CREATE`）；若群主在机器人资料卡开启了“获取群内全部消息”，则群里每条消息（含 @）都以 `GROUP_MESSAGE_CREATE` 全量事件推送，本插件两种都处理。仅收到 @ 事件时，“全量转发”只会转发 @ 且非命令的消息。
+- **不 @ 机器人直接发指令**：需要群主在开放平台机器人设置里开通“获取群内全部消息”（会推 `GROUP_MESSAGE_CREATE`），开通后无需 @ 即可触发指令；否则平台只推 @ 消息，非 @ 的指令收不到（这是平台限制，插件无法绕过）。
+- **主动消息已不可用**：QQ 官方机器人 **2025-04-21 起不再提供主动消息推送**。进出服通知、游戏 → 群转发等**主动消息**（不带 `msg_id`）会报 `40034105 主动消息失败, 无权限`，无法通过插件修复；只有针对用户消息的**被动回复**（带 `msg_id`）可以发送。
+- **Markdown 消息需单独申请权限**：非沙箱环境下，`markdown` 消息能力需在开放平台内邀开通（模板还需审核 + DAU 要求）。未开通时接口可能返回成功但消息被**静默丢弃**。请保持 `features.markdown-*` 为 `false`（纯文本）。
 - 游戏 → 群方向不能改原消息，只做转发（与 Spigot 端一致）。
 - 灵感移植自 Java 版，`motd.*`、`command-sender` 等死配置已丢弃。
 - 跨插件桥接接口（LuckyClover 的 `ll.exports`）为 LeviLamina 专属机制，EndStone 版暂未提供等价的跨插件导出；若需要，可在本插件上暴露一个 Python 模块函数供其他 EndStone 插件 `import` 调用。
