@@ -29,7 +29,7 @@ from . import state as state_mod
 from .logger import log
 
 PLUGIN_NAME = "huhobot-penguin"
-PLUGIN_VERSION = "0.1.0-beta.1"
+PLUGIN_VERSION = "0.1.0-beta.2"
 PLUGIN_DESCRIPTION = "QQ 开放平台官方机器人与 BDS 之间的聊天 / 命令桥接插件（EndStone Python 版）"
 PLUGIN_AUTHORS = ["huohua", "MengHanLOVE1027"]
 
